@@ -219,24 +219,41 @@
     </section>
   </main>
 
-  <!-- JAVASCRIPT LOGIC & SUPABASE -->
+ <!-- JAVASCRIPT LOGIC & SUPABASE -->
   <script>
     // -------------------------------------------------------------
-    // KONFIGURASI SUPABASE (GANTI VARIABLE INI DENGAN MILIKMU)
+    // KONFIGURASI SUPABASE
     // -------------------------------------------------------------
-    const SUPABASE_URL = "https://fclztugcwrufepkrbfgi.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjbHp0dWdjd3J1ZmVwa3JiZmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NjgwOTQsImV4cCI6MjEwNDQ0NDA5NH0.ydrUkchxk5r1vm5UyOx5tmMN9dyZv0JWTUuiCeLxaKA";
+    const SUPABASE_URL = "https://fclztugcwrufepkrbfgi.supabase.co"; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjbHp0dWdjd3J1ZmVwa3JiZmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NjgwOTQsImV4cCI6MjEwNDQ0NDA5NH0.ydrUkchxk5r1vm5UyOx5tmMN9dyZv0JWTUuiCeLxaKA"; // Ganti dengan anon key lengkap milikmu
 
-    let supabase = null;
+    // DEKLARASI VARIABEL SUPABASE (Hanya 1 kali deklarasi!)
+    let supabaseClient = null;
 
-    // Inisialisasi Supabase
-    if (SUPABASE_URL !== "https://fclztugcwrufepkrbfgi.supabase.co" && SUPABASE_ANON_KEY !== "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjbHp0dWdjd3J1ZmVwa3JiZmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NjgwOTQsImV4cCI6MjEwNDQ0NDA5NH0.ydrUkchxk5r1vm5UyOx5tmMN9dyZv0JWTUuiCeLxaKA") {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      document.getElementById('db-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Supabase Connected`;
-      document.getElementById('db-status').className = "flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-emerald-950/50 border border-emerald-800 text-emerald-400";
-    } else {
-      document.getElementById('db-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span> Offline Mode (Set Keys)`;
-      document.getElementById('db-status').className = "flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-rose-950/50 border border-rose-800 text-rose-400";
+    // Inisialisasi Supabase saat DOM selesai dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+      initSupabase();
+      fetchHistory();
+    });
+
+    function initSupabase() {
+      const dbStatus = document.getElementById('db-status');
+      if (SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== "https://fclztugcwrufepkrbfgi.supabase.co") {
+        try {
+          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          if (dbStatus) {
+            dbStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Supabase Connected`;
+            dbStatus.className = "flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-emerald-950/50 border border-emerald-800 text-emerald-400";
+          }
+        } catch (err) {
+          console.error("Gagal menginisialisasi Supabase:", err);
+        }
+      } else {
+        if (dbStatus) {
+          dbStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span> Offline Mode (Set Keys)`;
+          dbStatus.className = "flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-rose-950/50 border border-rose-800 text-rose-400";
+        }
+      }
     }
 
     // 1. GENERATE PROMPT
@@ -246,7 +263,7 @@
       const jenjang = document.getElementById('jenjang').value;
       const fase = document.getElementById('fase').value;
       const kelas = document.getElementById('kelas').value;
-      const tujuan = document.getElementById('tujuan').value || 'Menejlasakan konsep materi dengan baik.';
+      const tujuan = document.getElementById('tujuan').value || 'Menjelaskan konsep materi dengan baik.';
       const poinMateriRaw = document.getElementById('poinMateri').value;
       const jumlahSoal = document.getElementById('jumlahSoal').value;
       const temaWarna = document.getElementById('temaWarna').value;
@@ -320,7 +337,7 @@ Tolong buat lab ini langsung jadi (final) dalam satu kali generate, siap pakai u
 
       // Enable Save Button jika Supabase aktif
       const btnSave = document.getElementById('btnSaveSupabase');
-      if (supabase) {
+      if (supabaseClient && btnSave) {
         btnSave.disabled = false;
         btnSave.className = "w-full bg-brand-amber hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-2 cursor-pointer shadow";
       }
@@ -341,13 +358,15 @@ Tolong buat lab ini langsung jadi (final) dalam satu kali generate, siap pakai u
       document.getElementById('promptForm').reset();
       document.getElementById('promptOutput').value = '';
       const btnSave = document.getElementById('btnSaveSupabase');
-      btnSave.disabled = true;
-      btnSave.className = "w-full bg-slate-800 text-slate-500 font-semibold py-2.5 rounded-lg border border-brand-border transition flex items-center justify-center gap-2 cursor-not-allowed";
+      if (btnSave) {
+        btnSave.disabled = true;
+        btnSave.className = "w-full bg-slate-800 text-slate-500 font-semibold py-2.5 rounded-lg border border-brand-border transition flex items-center justify-center gap-2 cursor-not-allowed";
+      }
     }
 
     // 4. SIMPAN KE SUPABASE (INSERT)
     async function saveToSupabase() {
-      if (!supabase) return alert('Konfigurasi Supabase belum disetel!');
+      if (!supabaseClient) return alert('Konfigurasi Supabase belum disetel atau gagal terhubung!');
       
       const topik = document.getElementById('topik').value;
       const mapel = document.getElementById('mapel').value;
@@ -357,7 +376,7 @@ Tolong buat lab ini langsung jadi (final) dalam satu kali generate, siap pakai u
       const promptResult = document.getElementById('promptOutput').value;
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('prompts_history')
           .insert([
             {
@@ -372,7 +391,7 @@ Tolong buat lab ini langsung jadi (final) dalam satu kali generate, siap pakai u
         if (error) throw error;
 
         alert('Prompt berhasil disimpan ke Supabase!');
-        fetchHistory(); // Refresh list
+        fetchHistory();
       } catch (err) {
         alert('Gagal menyimpan: ' + err.message);
       }
@@ -381,15 +400,17 @@ Tolong buat lab ini langsung jadi (final) dalam satu kali generate, siap pakai u
     // 5. FETCH HISTORY FROM SUPABASE (READ)
     async function fetchHistory() {
       const historyList = document.getElementById('historyList');
-      if (!supabase) {
-        historyList.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Sistem berjalan offline. Isi API Key Supabase untuk mengaktifkan riwayat online.</p>`;
+      if (!historyList) return;
+
+      if (!supabaseClient) {
+        historyList.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Sistem berjalan offline / Supabase belum terhubung.</p>`;
         return;
       }
 
       historyList.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Memuat riwayat...</p>`;
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('prompts_history')
           .select('*')
           .order('created_at', { ascending: false })
@@ -397,7 +418,7 @@ Tolong buat lab ini langsung jadi (final) dalam satu kali generate, siap pakai u
 
         if (error) throw error;
 
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
           historyList.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Belum ada riwayat tersimpan.</p>`;
           return;
         }
@@ -417,9 +438,6 @@ Tolong buat lab ini langsung jadi (final) dalam satu kali generate, siap pakai u
         historyList.innerHTML = `<p class="text-xs text-rose-400 text-center py-4">Gagal memuat riwayat: ${err.message}</p>`;
       }
     }
-
-    // Auto Fetch History saat pertama kali dimuat
-    document.addEventListener('DOMContentLoaded', fetchHistory);
   </script>
 </body>
 </html>
