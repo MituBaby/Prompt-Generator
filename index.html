@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Canva AI Prompt Generator - EdTech Edition</title>
+  <link rel="icon" type="image/png" href="img/favicon.png" />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#0F172A',
+              card: '#1E293B',
+              border: '#334155',
+              teal: '#0D9488',
+              amber: '#F59E0B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body class="bg-brand-dark text-slate-100 font-sans min-h-screen flex flex-col">
+
+  <!-- NAVBAR -->
+  <header class="border-b border-brand-border bg-brand-dark/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <img src="img/favicon.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover" />
+        <div>
+          <h1 class="text-lg font-bold text-white leading-tight">Canva AI Prompt Generator</h1>
+          <p class="text-xs text-slate-400">Media Pembelajaran Interaktif Guru</p>
+        </div>
+      </div>
+      <div id="db-status" class="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-slate-800 border border-brand-border text-slate-400">
+        <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+        Connecting Supabase...
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- LEFT PANEL: FORM INPUT (7 COLS) -->
+    <section class="lg:col-span-7 bg-brand-card border border-brand-border rounded-xl p-6 shadow-xl space-y-6">
+      <div class="flex items-center justify-between border-b border-brand-border pb-4">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-brand-teal"></i> Detail Kebutuhan Prompt
+        </h2>
+        <button type="button" onclick="resetForm()" class="text-xs text-slate-400 hover:text-rose-400 transition flex items-center gap-1">
+          <i class="fa-solid fa-rotate-left"></i> Reset Form
+        </button>
+      </div>
+
+      <form id="promptForm" class="space-y-4">
+        <!-- 1. Topik & Mapel -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">1. Topik / Judul Materi *</label>
+            <input type="text" id="topik" required placeholder="mis. Teorema Pythagoras" class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">2. Mata Pelajaran *</label>
+            <input type="text" id="mapel" required placeholder="mis. Matematika" class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal" />
+          </div>
+        </div>
+
+        <!-- 3, 4, 5. Jenjang, Fase, Kelas -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">3. Jenjang</label>
+            <select id="jenjang" class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal">
+              <option value="SD">SD</option>
+              <option value="SMP" selected>SMP</option>
+              <option value="SMA">SMA</option>
+              <option value="SMK">SMK</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">4. Fase</label>
+            <select id="fase" class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal">
+              <option value="Fase A">Fase A</option>
+              <option value="Fase B">Fase B</option>
+              <option value="Fase C">Fase C</option>
+              <option value="Fase D" selected>Fase D</option>
+              <option value="Fase E">Fase E</option>
+              <option value="Fase F">Fase F</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">5. Kelas</label>
+            <input type="text" id="kelas" placeholder="mis. VIII" value="VIII" class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal" />
+          </div>
+        </div>
+
+        <!-- 6. Tujuan Pembelajaran -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">6. Tujuan Pembelajaran</label>
+          <textarea id="tujuan" rows="2" class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal" placeholder="Peserta didik mampu menjelaskan dan membuktikan konsep ini..."></textarea>
+        </div>
+
+        <!-- 7. Poin Materi (Per Baris) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">7. Poin Materi Tab Teori (1 poin per baris)</label>
+          <textarea id="poinMateri" rows="3" class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal" placeholder="Definisi & konsep dasar&#10;Rumus utama dan variabelnya&#10;Syarat / kapan konsep ini berlaku"></textarea>
+        </div>
+
+        <!-- 8 & 9. Jumlah Soal & Tema Warna -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">8. Jumlah Soal LKPD</label>
+            <input type="number" id="jumlahSoal" value="3" min="1" max="10" class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">9. Tema Warna Visual</label>
+            <input type="text" id="temaWarna" value="Blueprint Navy (#F2A541 & #4ECDC4)" class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal" />
+          </div>
+        </div>
+
+        <!-- 10. Checkbox Fitur -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-2">10. Fitur Disertakan</label>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <label class="flex items-center gap-2 bg-slate-900 p-2 rounded border border-brand-border cursor-pointer">
+              <input type="checkbox" id="fiturSplash" checked class="accent-brand-teal" /> Splash Screen + Loading
+            </label>
+            <label class="flex items-center gap-2 bg-slate-900 p-2 rounded border border-brand-border cursor-pointer">
+              <input type="checkbox" id="fiturSuara" checked class="accent-brand-teal" /> Efek Suara Interaktif
+            </label>
+            <label class="flex items-center gap-2 bg-slate-900 p-2 rounded border border-brand-border cursor-pointer">
+              <input type="checkbox" id="fiturReset" checked class="accent-brand-teal" /> Tombol Reset Simulasi
+            </label>
+            <label class="flex items-center gap-2 bg-slate-900 p-2 rounded border border-brand-border cursor-pointer">
+              <input type="checkbox" id="fiturFoto" checked class="accent-brand-teal" /> Foto Pengembang
+            </label>
+          </div>
+        </div>
+
+        <!-- 11, 12, 13. Pengembang & Brand -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">11. Nama Pengembang</label>
+            <input type="text" id="namaPengembang" value="Andrika Rizal Arlovi, S.Pd., M.Pd." class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">12. Jabatan/Tagline</label>
+            <input type="text" id="jabatan" value="Guru Digital" class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">13. Nama Brand / Aplikasi</label>
+            <input type="text" id="brandName" value="MAS Guru Digital" class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal" />
+          </div>
+        </div>
+
+        <!-- 14. Catatan Tambahan -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">14. Catatan Tambahan (Opsional)</label>
+          <input type="text" id="catatan" placeholder="mis. Tambahkan animasi halus pada kuis" class="w-full bg-slate-900 border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-teal" />
+        </div>
+
+        <!-- 15. Action Button -->
+        <button type="button" onclick="generatePrompt()" class="w-full bg-brand-teal hover:bg-teal-600 text-white font-bold py-3 rounded-lg shadow-lg transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Prompt Canva AI
+        </button>
+      </form>
+    </section>
+
+    <!-- RIGHT PANEL: PROMPT RESULT & SUPABASE HISTORY (5 COLS) -->
+    <section class="lg:col-span-5 space-y-6">
+      
+      <!-- HASIL PROMPT CARD -->
+      <div class="bg-brand-card border border-brand-border rounded-xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-brand-border pb-3">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-code text-brand-amber"></i> Hasil Prompt Generated
+          </h2>
+          <button onclick="copyPrompt()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-brand-border text-slate-200 px-3 py-1.5 rounded-md transition flex items-center gap-1">
+            <i class="fa-regular fa-copy"></i> Salin Prompt
+          </button>
+        </div>
+
+        <textarea id="promptOutput" rows="14" readonly class="w-full bg-slate-950 border border-brand-border rounded-lg p-3 text-xs font-mono text-emerald-400 focus:outline-none resize-none" placeholder="Klik tombol 'Generate Prompt' di samping untuk menghasilkan prompt AI..."></textarea>
+
+        <button id="btnSaveSupabase" onclick="saveToSupabase()" disabled class="w-full bg-slate-800 text-slate-500 font-semibold py-2.5 rounded-lg border border-brand-border transition flex items-center justify-center gap-2 cursor-not-allowed">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Simpan ke Supabase History
+        </button>
+      </div>
+
+      <!-- RIWAYAT SUPABASE -->
+      <div class="bg-brand-card border border-brand-border rounded-xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-brand-border pb-3">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-brand-teal"></i> Riwayat Prompt Terbaru
+          </h3>
+          <button onclick="fetchHistory()" class="text-xs text-brand-teal hover:underline flex items-center gap-1">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh
+          </button>
+        </div>
+
+        <div id="historyList" class="space-y-3 max-h-60 overflow-y-auto pr-1">
+          <p class="text-xs text-slate-500 text-center py-4">Memuat data riwayat...</p>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- JAVASCRIPT LOGIC & SUPABASE -->
+  <script>
+    // -------------------------------------------------------------
+    // KONFIGURASI SUPABASE (GANTI VARIABLE INI DENGAN MILIKMU)
+    // -------------------------------------------------------------
+    const SUPABASE_URL = "https://fclztugcwrufepkrbfgi.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjbHp0dWdjd3J1ZmVwa3JiZmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NjgwOTQsImV4cCI6MjEwNDQ0NDA5NH0.ydrUkchxk5r1vm5UyOx5tmMN9dyZv0JWTUuiCeLxaKA";
+
+    let supabase = null;
+
+    // Inisialisasi Supabase
+    if (SUPABASE_URL !== "YOUR_SUPABASE_URL_HERE" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY_HERE") {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      document.getElementById('db-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Supabase Connected`;
+      document.getElementById('db-status').className = "flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-emerald-950/50 border border-emerald-800 text-emerald-400";
+    } else {
+      document.getElementById('db-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span> Offline Mode (Set Keys)`;
+      document.getElementById('db-status').className = "flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-rose-950/50 border border-rose-800 text-rose-400";
+    }
+
+    // 1. GENERATE PROMPT
+    function generatePrompt() {
+      const topik = document.getElementById('topik').value || 'Tanpa Judul';
+      const mapel = document.getElementById('mapel').value || 'Umum';
+      const jenjang = document.getElementById('jenjang').value;
+      const fase = document.getElementById('fase').value;
+      const kelas = document.getElementById('kelas').value;
+      const tujuan = document.getElementById('tujuan').value || 'Menejlasakan konsep materi dengan baik.';
+      const poinMateriRaw = document.getElementById('poinMateri').value;
+      const jumlahSoal = document.getElementById('jumlahSoal').value;
+      const temaWarna = document.getElementById('temaWarna').value;
+      const namaPengembang = document.getElementById('namaPengembang').value;
+      const jabatan = document.getElementById('jabatan').value;
+      const brandName = document.getElementById('brandName').value;
+      const catatan = document.getElementById('catatan').value;
+
+      // Formatting Poin Materi
+      const poinArray = poinMateriRaw.split('\n').filter(p => p.trim() !== '');
+      const formattedPoin = poinArray.map(p => `  - ${p.trim()}`).join('\n') || '  - Definisi & Konsep Utama';
+
+      // Formatting Fitur Checkbox
+      let fiturList = [];
+      if (document.getElementById('fiturSuara').checked) fiturList.push('efek suara interaktif');
+      if (document.getElementById('fiturReset').checked) fiturList.push('tombol reset simulasi');
+      const fiturText = fiturList.length > 0 ? `dengan ${fiturList.join(', ')}.` : '.';
+
+      // Format Splash Screen & Foto Pengembang
+      const isSplash = document.getElementById('fiturSplash').checked;
+      const isFoto = document.getElementById('fiturFoto').checked;
+
+      // Construct Prompt Text Template
+      const finalPrompt = `Kamu adalah pengembang lab maya interaktif untuk siswa ${jenjang}.
+
+Buat lab maya tentang: ${topik}
+Mata Pelajaran: ${mapel}
+Target: ${fase} (Kurikulum Merdeka) — umumnya kelas ${kelas}
+Format: Full Screen 16:9 tanpa scrolling, ${fiturText}
+
+=== IDENTITAS & GAYA VISUAL ===
+- Nama aplikasi/brand yang ditampilkan di pojok kiri atas: "${brandName}"
+- Gunakan tema visual yang khas dan TIDAK generik/template AI pada umumnya: ${temaWarna}.
+- Gunakan font display geometris (mis. Space Grotesk) dipadukan font mono teknis (mis. IBM Plex Mono) untuk angka/data, agar terkesan presisi dan profesional.
+
+=== TUJUAN PEMBELAJARAN ===
+${tujuan}
+
+=== STRUKTUR TAB (navigasi seperti tab kertas di bagian atas) ===
+1. Teori — jelaskan konsep dengan bahasa sederhana untuk ${jenjang}, sertakan rumus utama dan ilustrasi/diagram SVG. Poin materi yang wajib dibahas:
+${formattedPoin}
+2. Prosedur — langkah-langkah bernomor tentang cara menggunakan lab ini (dari eksplorasi teori sampai mengerjakan LKPD).
+3. Simulasi — visualisasi interaktif utama (grafik/diagram/model) yang berubah real-time mengikuti kontrol pengguna (slider/tombol/input), lengkap dengan penjelasan hasil perhitungan secara bertahap${document.getElementById('fiturReset').checked ? ' dan TOMBOL RESET untuk mengembalikan ke kondisi awal' : ''}.
+4. LKPD — ${jumlahSoal} soal latihan berjenjang dengan kolom jawaban, tombol "Periksa Jawaban" yang memberi umpan balik benar/salah, navigasi antar soal, dan skor total.
+5. Pengembang — informasi tujuan pembelajaran, jenjang & fase, fitur lab, cara pakai di kelas, serta ${isFoto ? 'FOTO PENGEMBANG' : 'identitas pengembang'} yang ditata profesional dalam kartu bergaya badge/label dengan nama dan jabatan berikut:
+   Nama: ${namaPengembang}
+   Jabatan/tagline: ${jabatan}.
+
+${isSplash ? `=== SPLASH SCREEN ===
+Tambahkan splash screen pembuka sebelum masuk ke lab utama, berisi:
+- Gambar sampul (akan saya unggah) sebagai latar penuh dengan efek zoom halus otomatis dan gradient overlay agar teks tetap terbaca
+- Indikator loading berupa progress bar 0-100% dengan teks "Memuat lab virtual…"
+- Tombol "Mulai Belajar" yang muncul dengan animasi fade-in setelah loading selesai, disertai efek suara saat siap dan saat tombol ditekan, lalu splash memudar (fade-out) menampilkan lab utama.
+
+` : ''}${document.getElementById('fiturSuara').checked ? `=== EFEK SUARA ===
+Gunakan Web Audio API (oscillator sederhana) untuk seluruh efek suara TANPA file audio eksternal, meliputi: klik tombol, pindah tab, reset, proses hitung/reveal hasil, jawaban benar, jawaban salah, loading selesai, dan tombol mulai. Sertakan juga tombol kecil di status bar untuk mengaktifkan/menonaktifkan suara.
+
+` : ''}=== KETENTUAN TEKNIS ===
+- Satu file HTML mandiri (self-contained), tanpa dependensi eksternal selain Google Fonts.
+- Layout wajib pas dalam rasio 16:9 tanpa scroll sama sekali di semua tab (gunakan pagination/kontrol untuk konten yang panjang, bukan scroll).
+- Semua tombol interaktif harus memberi umpan balik visual (dan suara bila diaktifkan) saat ditekan.
+- Desain harus terasa premium, proporsional, dan konsisten di setiap tab — bukan sekadar teks di dalam kotak.
+${catatan ? `- Catatan Tambahan: ${catatan}\n` : ''}
+=== FILE YANG AKAN SAYA UNGGAH ===
+1. Gambar sampul/splash screen (foto atau ilustrasi tema ${topik})
+${isFoto ? `2. Foto pengembang untuk tab Pengembang — tolong HAPUS latar belakangnya dan tata secara profesional & proporsional` : ''}
+
+Tolong buat lab ini langsung jadi (final) dalam satu kali generate, siap pakai untuk kelas.`;
+
+      document.getElementById('promptOutput').value = finalPrompt;
+
+      // Enable Save Button jika Supabase aktif
+      const btnSave = document.getElementById('btnSaveSupabase');
+      if (supabase) {
+        btnSave.disabled = false;
+        btnSave.className = "w-full bg-brand-amber hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-2 cursor-pointer shadow";
+      }
+    }
+
+    // 2. COPY TO CLIPBOARD
+    function copyPrompt() {
+      const output = document.getElementById('promptOutput');
+      if (!output.value) return alert('Generate prompt terlebih dahulu!');
+      
+      output.select();
+      navigator.clipboard.writeText(output.value);
+      alert('Prompt berhasil disalin ke clipboard!');
+    }
+
+    // 3. RESET FORM
+    function resetForm() {
+      document.getElementById('promptForm').reset();
+      document.getElementById('promptOutput').value = '';
+      const btnSave = document.getElementById('btnSaveSupabase');
+      btnSave.disabled = true;
+      btnSave.className = "w-full bg-slate-800 text-slate-500 font-semibold py-2.5 rounded-lg border border-brand-border transition flex items-center justify-center gap-2 cursor-not-allowed";
+    }
+
+    // 4. SIMPAN KE SUPABASE (INSERT)
+    async function saveToSupabase() {
+      if (!supabase) return alert('Konfigurasi Supabase belum disetel!');
+      
+      const topik = document.getElementById('topik').value;
+      const mapel = document.getElementById('mapel').value;
+      const jenjang = document.getElementById('jenjang').value;
+      const fase = document.getElementById('fase').value;
+      const brandName = document.getElementById('brandName').value;
+      const promptResult = document.getElementById('promptOutput').value;
+
+      try {
+        const { data, error } = await supabase
+          .from('prompts_history')
+          .insert([
+            {
+              topik: topik,
+              mapel: mapel,
+              jenjang_fase: `${jenjang} (${fase})`,
+              brand_name: brandName,
+              prompt_result: promptResult
+            }
+          ]);
+
+        if (error) throw error;
+
+        alert('Prompt berhasil disimpan ke Supabase!');
+        fetchHistory(); // Refresh list
+      } catch (err) {
+        alert('Gagal menyimpan: ' + err.message);
+      }
+    }
+
+    // 5. FETCH HISTORY FROM SUPABASE (READ)
+    async function fetchHistory() {
+      const historyList = document.getElementById('historyList');
+      if (!supabase) {
+        historyList.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Sistem berjalan offline. Isi API Key Supabase untuk mengaktifkan riwayat online.</p>`;
+        return;
+      }
+
+      historyList.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Memuat riwayat...</p>`;
+
+      try {
+        const { data, error } = await supabase
+          .from('prompts_history')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (error) throw error;
+
+        if (data.length === 0) {
+          historyList.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Belum ada riwayat tersimpan.</p>`;
+          return;
+        }
+
+        historyList.innerHTML = data.map(item => `
+          <div class="p-3 bg-slate-900 border border-brand-border rounded-lg space-y-1">
+            <div class="flex justify-between items-start">
+              <h4 class="text-xs font-bold text-white">${item.topik}</h4>
+              <span class="text-[10px] bg-slate-800 text-brand-teal px-1.5 py-0.5 rounded border border-brand-border">${item.jenjang_fase}</span>
+            </div>
+            <p class="text-[11px] text-slate-400">${item.mapel} • ${item.brand_name}</p>
+            <p class="text-[10px] text-slate-500">${new Date(item.created_at).toLocaleString('id-ID')}</p>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        historyList.innerHTML = `<p class="text-xs text-rose-400 text-center py-4">Gagal memuat riwayat: ${err.message}</p>`;
+      }
+    }
+
+    // Auto Fetch History saat pertama kali dimuat
+    document.addEventListener('DOMContentLoaded', fetchHistory);
+  </script>
+</body>
+</html>
