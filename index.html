@@ -230,7 +230,7 @@
     let supabase = null;
 
     // Inisialisasi Supabase
-    if (SUPABASE_URL !== "YOUR_SUPABASE_URL_HERE" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY_HERE") {
+    if (SUPABASE_URL !== "https://fclztugcwrufepkrbfgi.supabase.co" && SUPABASE_ANON_KEY !== "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjbHp0dWdjd3J1ZmVwa3JiZmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NjgwOTQsImV4cCI6MjEwNDQ0NDA5NH0.ydrUkchxk5r1vm5UyOx5tmMN9dyZv0JWTUuiCeLxaKA") {
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       document.getElementById('db-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Supabase Connected`;
       document.getElementById('db-status').className = "flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-emerald-950/50 border border-emerald-800 text-emerald-400";
