@@ -238,7 +238,7 @@
 
     function initSupabase() {
       const dbStatus = document.getElementById('db-status');
-      if (SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== "https://fclztugcwrufepkrbfgi.supabase.co") {
+      if (SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== "YOUR_SUPABASE_URL_HERE") {
         try {
           supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
           if (dbStatus) {
